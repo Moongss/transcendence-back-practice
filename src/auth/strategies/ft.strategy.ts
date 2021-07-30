@@ -2,6 +2,7 @@ import { HttpService } from "@nestjs/axios";
 import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
+import { profile } from "console";
 import { Strategy } from "passport-oauth2";
 import { lastValueFrom } from "rxjs";
 
@@ -9,12 +10,12 @@ import { lastValueFrom } from "rxjs";
 export class FortytwoStrategy extends PassportStrategy(Strategy, 'ft') {
 	constructor(private http: HttpService, configService: ConfigService) { 
 		super({
-			authorizationURL: `https://api.intra.42.fr/oauth/authorize?client_id=${configService.get('42_CLIENT_ID')}&redirect_uri=${configService.get('42_CLIENT_CALLBACK')}&response_type=code`,
+			authorizationURL: `https://api.intra.42.fr/oauth/authorize?client_id=${configService.get<string>('ft.id')}&redirect_uri=${configService.get<string>('ft.callback')}&response_type=code`,
 			tokenURL: 'https://api.intra.42.fr/oauth/token',
 			scope: 'profile',
-			clientID: configService.get('42_CLIENT_ID'),
-			clientSecret: configService.get('42_CLIENT_SECRET'),
-			callbackURL: configService.get('42_CLIENT_CALLBACK'),
+			clientID: configService.get<string>('ft.id'),
+			clientSecret: configService.get<string>('ft.secret'),
+			callbackURL: configService.get<string>('ft.callback'),
 		});
 	}
 

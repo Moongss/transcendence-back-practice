@@ -1,31 +1,32 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TodoModule } from './todo/todo.module';
-
-import Todo from './todo/models/todo.entity'
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import configFile from './config'
+
 @Module({
   imports: [
-	TypeOrmModule.forRoot({
-		type: "postgres",
-		host: "localhost",
-		port: 5432,
-		username: "postgres",
-		password: "1234",
-		database: "todo_db",
-		entities: [Todo],
-		synchronize: true
-	}),
 	ConfigModule.forRoot({
 		isGlobal: true,
-		envFilePath: '.env.fortytwo',
+		// ignoreEnvFile: true,
+		load: [configFile],
 	}),
-	TodoModule,
+	TypeOrmModule.forRootAsync({
+		imports: [ConfigModule],
+		inject: [ConfigService],
+		useFactory: (config: ConfigService) => ({
+			type: "postgres",
+			host: config.get<string>('database.host'),
+			port: config.get<number>('database.port'),
+			username: config.get<string>('database.user'),
+			password: config.get<string>('database.password'),
+			database: config.get<string>('database.name'),
+			entities: [], //add entity later
+			synchronize: true,
+		}),
+	}),
 	AuthModule,
   ],
   controllers: [AppController],
